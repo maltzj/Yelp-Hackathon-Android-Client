@@ -1,23 +1,18 @@
 package com.example.yelp_hackathon_11_client;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 
+import android.app.Activity;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.app.Activity;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 
 public class NFCActivity extends Activity {
 
-	int mTagId;
+	int mRoomId;
 	TextView mTextView;
 
 	@Override
@@ -51,9 +46,10 @@ public class NFCActivity extends Activity {
 				String text = new String(payload, languageCodeLength + 1,
 						payload.length - languageCodeLength - 1, textEncoding);
 				String id = text.substring(text.lastIndexOf(":") + 1);
-				mTagId = Integer.parseInt(id);
-				mTextView.setText(String.valueOf(mTagId));
-				FireRequest(mTagId);
+				mRoomId = Integer.parseInt(id);
+				mTextView.setText(String.valueOf(mRoomId));
+				startService(CheckInService.intentForCheckIn(mRoomId, this));
+				//finish();
 			} catch (UnsupportedEncodingException e) {
 				// If they don't have UTF-8 or 16 just cry a little bit
 			}
@@ -68,27 +64,4 @@ public class NFCActivity extends Activity {
 		getMenuInflater().inflate(R.menu.nfc, menu);
 		return true;
 	}
-	
-    protected boolean IsCheckingOut()
-    {
-    	return false;
-    }
-    
-    protected void FireRequest(int mTagId)
-    {
-    	String url = null;
-    	if(! IsCheckingOut())
-    	{
-    		url = rootServiceUrl + mTagId + "/in";
-    	}
-    	else
-    	{
-    		url = rootServiceUrl + mTagId + "/out";
-    	}
-    	//URLConnection connection = new URL(url).openConnection();
-		Log.e("Josh", "Fire request: " + url);
-    }
-    
-    private String rootServiceUrl = "/req/";
-
 }
