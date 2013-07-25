@@ -12,6 +12,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 public class CheckInService extends IntentService {
 
@@ -20,9 +21,14 @@ public class CheckInService extends IntentService {
 	private static final String SERVICE_URL_BASE = "STUFF";
 
 	private static final String KEY_ROOM_ID = "room_id_key";
+	private static final String TAG = CheckInService.class.getSimpleName();
 	private static final int KEY_CHECK_IN_NOTIFICATION = 1;
 
 	private NotificationManager mManager;
+
+	public CheckInService() {
+		super(TAG);
+	}
 
 	public CheckInService(String name) {
 		super(name);
@@ -36,6 +42,7 @@ public class CheckInService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
+		Log.e("MALTZ", "do we get here??");
 		mRoomId = intent.getExtras().getInt(KEY_ROOM_ID);
 
 		NotificationCompat.Builder notification = new NotificationCompat.Builder(this)
@@ -45,7 +52,8 @@ public class CheckInService extends IntentService {
 		mManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		mManager.notify(KEY_CHECK_IN_NOTIFICATION, notification.build());
 
-		fireRequest(mRoomId);
+		// fireRequest(mRoomId);
+		Log.e("MALTZ", "notified with " + mRoomId);
 	}
 
 	protected void fireRequest(int roomId) {
