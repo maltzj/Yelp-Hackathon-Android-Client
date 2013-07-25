@@ -1,6 +1,10 @@
 package com.example.yelp_hackathon_11_client;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
@@ -49,7 +53,7 @@ public class NFCActivity extends Activity {
 				String id = text.substring(text.lastIndexOf(":") + 1);
 				mTagId = Integer.parseInt(id);
 				mTextView.setText(String.valueOf(mTagId));
-				finish();
+				FireRequest(mTagId);
 			} catch (UnsupportedEncodingException e) {
 				// If they don't have UTF-8 or 16 just cry a little bit
 			}
@@ -64,5 +68,27 @@ public class NFCActivity extends Activity {
 		getMenuInflater().inflate(R.menu.nfc, menu);
 		return true;
 	}
+	
+    protected boolean IsCheckingOut()
+    {
+    	return false;
+    }
+    
+    protected void FireRequest(int mTagId)
+    {
+    	String url = null;
+    	if(! IsCheckingOut())
+    	{
+    		url = rootServiceUrl + mTagId + "/in";
+    	}
+    	else
+    	{
+    		url = rootServiceUrl + mTagId + "/out";
+    	}
+    	//URLConnection connection = new URL(url).openConnection();
+		Log.e("Josh", "Fire request: " + url);
+    }
+    
+    private String rootServiceUrl = "/req/";
 
 }
