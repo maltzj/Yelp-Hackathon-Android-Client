@@ -28,7 +28,6 @@ public class NFCActivity extends Activity {
 		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) {
 			Parcelable[] rawMsgs = getIntent().getParcelableArrayExtra(
 					NfcAdapter.EXTRA_NDEF_MESSAGES);
-			Log.e("MALTZ", "we have " + rawMsgs.length + " messages");
 			NdefMessage msg = (NdefMessage) rawMsgs[0];
 
 			byte[] payload = msg.getRecords()[0].getPayload();
@@ -50,8 +49,9 @@ public class NFCActivity extends Activity {
 				String id = text.substring(text.lastIndexOf(":") + 1);
 				mTagId = Integer.parseInt(id);
 				mTextView.setText(String.valueOf(mTagId));
+				finish();
 			} catch (UnsupportedEncodingException e) {
-				Log.e("MALTZ", "seriously??? you don't have UTF-8 or UTF-16??");
+				// If they don't have UTF-8 or 16 just cry a little bit
 			}
 		}
 
