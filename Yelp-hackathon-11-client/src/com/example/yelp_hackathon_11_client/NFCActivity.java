@@ -7,6 +7,7 @@ import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.app.Activity;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 
@@ -48,6 +49,7 @@ public class NFCActivity extends Activity {
 				String id = text.substring(text.lastIndexOf(":") + 1);
 				mTagId = Integer.parseInt(id);
 				mTextView.setText(String.valueOf(mTagId));
+				finish();
 			} catch (UnsupportedEncodingException e) {
 				// If they don't have UTF-8 or 16 just cry a little bit
 			}
