@@ -3,6 +3,7 @@
 
     <string name="app_name">Yelp-hackathon-11-client</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="hello_world">We launched our hackathon app!!</string>
+    
 
 </resources>
