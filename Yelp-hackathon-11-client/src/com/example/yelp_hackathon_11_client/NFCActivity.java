@@ -7,7 +7,6 @@ import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
 
@@ -48,9 +47,8 @@ public class NFCActivity extends Activity {
 				String id = text.substring(text.lastIndexOf(":") + 1);
 				mRoomId = Integer.parseInt(id);
 				mTextView.setText(String.valueOf(mRoomId));
-				Log.e("MALTZ", "are we about to do this");
 				startService(CheckInService.intentForCheckIn(mRoomId, this));
-				//finish();
+				finish();
 			} catch (UnsupportedEncodingException e) {
 				// If they don't have UTF-8 or 16 just cry a little bit
 			}

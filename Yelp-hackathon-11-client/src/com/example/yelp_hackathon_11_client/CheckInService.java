@@ -7,6 +7,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -18,7 +25,7 @@ public class CheckInService extends IntentService {
 
 	private int mRoomId;
 
-	private static final String SERVICE_URL_BASE = "STUFF";
+	private static final String SERVICE_URL_BASE = "http://10.50.2.4:5000";
 
 	private static final String KEY_ROOM_ID = "room_id_key";
 	private static final String TAG = CheckInService.class.getSimpleName();
@@ -42,7 +49,6 @@ public class CheckInService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		Log.e("MALTZ", "do we get here??");
 		mRoomId = intent.getExtras().getInt(KEY_ROOM_ID);
 
 		NotificationCompat.Builder notification = new NotificationCompat.Builder(this)
@@ -52,30 +58,35 @@ public class CheckInService extends IntentService {
 		mManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		mManager.notify(KEY_CHECK_IN_NOTIFICATION, notification.build());
 
-		// fireRequest(mRoomId);
+		fireRequest(mRoomId);
 		Log.e("MALTZ", "notified with " + mRoomId);
 	}
 
 	protected void fireRequest(int roomId) {
 		String url = null;
 		if (!(CheckIn.isCheckedIn(this, roomId))) {
-			url = SERVICE_URL_BASE + roomId + "/in";
+			url = SERVICE_URL_BASE + "/room/checkin/" + roomId;
 		} else {
-			url = SERVICE_URL_BASE + roomId + "/out";
+			url = SERVICE_URL_BASE + "/room/checkout/" + roomId;
 		}
 
-		// Try to open a connection
+		HttpClient httpClient = new DefaultHttpClient();
+		HttpPost postRequest = new HttpPost(url);
 		try {
-			URLConnection connection = new URL(url).openConnection();
-			connection.connect();
-			InputStream inStream = connection.getInputStream();
-			OutputStream outStream = connection.getOutputStream();
-			inStream.close();
-			outStream.close();
-		} catch (MalformedURLException e) {
-			// Be sad
-		} catch (IOException e) {
-			// Be sad
+			HttpResponse response = httpClient.execute(postRequest);
+			Log.e("MALTZ", "response code is " + response.getStatusLine().getStatusCode());
+			HttpEntity responseEntity = response.getEntity();
+
+			if (responseEntity != null) {
+				InputStream responseStream = responseEntity.getContent();
+				responseStream.close();
+			}
+		} catch (ClientProtocolException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 
 		mManager.cancel(KEY_CHECK_IN_NOTIFICATION);
