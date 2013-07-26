@@ -2,10 +2,6 @@ package com.example.yelp_hackathon_11_client;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -18,14 +14,16 @@ import android.app.IntentService;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 public class CheckInService extends IntentService {
 
 	private int mRoomId;
 
 	private static final String SERVICE_URL_BASE = "http://10.50.2.4:5000";
+	private static final long CHECK_OUT_THRESHOLD_IN_MS = 1000 * 60 * 60; // One Hour
 
 	private static final String KEY_ROOM_ID = "room_id_key";
 	private static final String TAG = CheckInService.class.getSimpleName();
@@ -59,22 +57,21 @@ public class CheckInService extends IntentService {
 		mManager.notify(KEY_CHECK_IN_NOTIFICATION, notification.build());
 
 		fireRequest(mRoomId);
-		Log.e("MALTZ", "notified with " + mRoomId);
 	}
 
 	protected void fireRequest(int roomId) {
 		String url = null;
-		if (!(CheckIn.isCheckedIn(this, roomId))) {
+		if (!(isCheckedIn(roomId))) {
 			url = SERVICE_URL_BASE + "/room/checkin/" + roomId;
 		} else {
-			url = SERVICE_URL_BASE + "/room/checkout/" + roomId;
+			url = SERVICE_URL_BASE + "/room/checkout/"
+		+ roomId;
 		}
 
 		HttpClient httpClient = new DefaultHttpClient();
 		HttpPost postRequest = new HttpPost(url);
 		try {
 			HttpResponse response = httpClient.execute(postRequest);
-			Log.e("MALTZ", "response code is " + response.getStatusLine().getStatusCode());
 			HttpEntity responseEntity = response.getEntity();
 
 			if (responseEntity != null) {
@@ -90,5 +87,30 @@ public class CheckInService extends IntentService {
 		}
 
 		mManager.cancel(KEY_CHECK_IN_NOTIFICATION);
+	}
+	
+	public boolean isCheckedIn(int id) {
+		SharedPreferences prefs = getSharedPreferences(this.getClass().getSimpleName(), Context.MODE_PRIVATE);
+		Editor prefEditor = prefs.edit();
+
+		long lastCheckIn = prefs.getLong(String.valueOf(id), -1);
+
+		// If we got negative one, they didn't check in before
+		if (lastCheckIn == -1 ) {
+			prefEditor.putLong(String.valueOf(id), System.currentTimeMillis());
+			prefEditor.commit();
+			return false;
+		} else {
+			// Otherwise if they last ehcecked in within our check out threshold, make this a checkout
+			if (System.currentTimeMillis() - lastCheckIn < CHECK_OUT_THRESHOLD_IN_MS) {
+				prefEditor.remove(String.valueOf(id));
+				prefEditor.commit();
+				return true;
+			} else {
+				prefEditor.putLong(String.valueOf(id), System.currentTimeMillis());
+				prefEditor.commit();
+				return false;
+			}
+		}
 	}
 }
